@@ -53,6 +53,73 @@ function(dot)
     IO_unlink(fn);
 end);
 
+BindGlobal("JupyterTikZSplash",
+function(tikz)
+    local fn, header, rnd, ltx, svgfile, stream, svgdata, szscr;
+    
+    header:=Concatenation(
+            "\\documentclass[crop,tikz]{standalone}[2013/04/13]\n", 
+                    "\\makeatletter\n",
+                    "\\batchmode\n",
+                    "\\nonstopmode\n",
+                    "\\begin{document}",
+            "\\begin{tikzpicture}");
+    header:=Concatenation(header, tikz);
+    header:=Concatenation(header,"\\end{tikzpicture}\n\\end{document}");
+    
+    rnd:=String(Random([0..1000]));
+    fn := Concatenation("svg_get",rnd);
+    
+    PrintTo(Concatenation(fn,".tex"),header);
+    
+    ltx:=Concatenation("pdflatex -shell-escape  ", 
+        Concatenation(fn, ".tex")," > ",Concatenation(fn, ".log2"));
+    Exec(ltx);
+
+    if not(IsExistingFile( Concatenation(fn, ".pdf") )) then
+        Print("No pdf was created; pdflatex is installed in your system?");
+    else
+        svgfile:=Concatenation(fn,".svg");
+        ltx:=Concatenation("pdf2svg ", Concatenation(fn, ".pdf"), " ",
+            svgfile, " >> ",Concatenation(fn, ".log2"));
+        Exec(ltx);
+    
+        if not(IsExistingFile(svgfile)) then
+            Print("No svg was created; pdf2svg is installed in your system?");
+        else
+            stream := InputTextFile( svgfile );
+            if stream <> fail then
+                szscr := SizeScreen();
+                svgdata := ReadAll( stream );
+                CloseStream( stream );
+                SizeScreen( [Length( svgdata ), szscr[2]] );
+                Print( svgdata );
+                SizeScreen( szscr );
+            else
+                Print( "Unable to render ", tikz );
+            fi;
+            RemoveFile( svgfile );
+        fi;
+    fi;
+
+    if IsExistingFile( Concatenation(fn, ".log") ) then
+        RemoveFile( Concatenation(fn, ".log") );
+    fi;
+    if IsExistingFile( Concatenation(fn, ".log2") ) then
+        RemoveFile( Concatenation(fn, ".log2") );
+    fi;
+    if IsExistingFile( Concatenation(fn, ".aux") ) then
+        RemoveFile( Concatenation(fn, ".aux") );
+    fi;
+    if IsExistingFile( Concatenation(fn, ".pdf") ) then
+        RemoveFile( Concatenation(fn, ".pdf") );
+    fi;
+    if IsExistingFile( Concatenation(fn, ".tex") ) then
+        RemoveFile( Concatenation(fn, ".tex") );
+    fi;
+end);
+
+
 # The following are needed to make the help system
 # sort of play nice with the wrapper kernel
 SetUserPreference("browse", "SelectHelpMatches", false);
