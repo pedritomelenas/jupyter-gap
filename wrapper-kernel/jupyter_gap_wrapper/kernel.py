@@ -79,9 +79,15 @@ class GAPKernel(Kernel):
             return {'status': 'ok', 'execution_count': self.execution_count,
                     'payload': [], 'user_expressions': {}}
 
+        nocomment_code="";
+        for line in code.splitlines():
+            divline = re.split('[ \t]*#', line);
+            if len(divline[0]) != 0: 
+                nocomment_code = nocomment_code + divline[0] + '\n';
+
         interrupted = False
         try:
-            output = self.gapwrapper.run_command(code.rstrip().replace('\n', ' ') + " ;", timeout=None)
+            output = self.gapwrapper.run_command(nocomment_code.rstrip().replace('\n', ' ') + " ;", timeout=None)
         except KeyboardInterrupt:
             self.gapwrapper.child.sendintr()
             interrupted = True
