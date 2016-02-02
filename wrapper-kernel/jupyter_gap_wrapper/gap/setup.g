@@ -58,7 +58,8 @@ function(tikz)
     local fn, header, rnd, ltx, svgfile, stream, svgdata, szscr;
     
     header:=Concatenation(
-            "\\documentclass[crop,tikz]{standalone}[2013/04/13]\n", 
+                    "\\documentclass[crop,tikz]{standalone}\n", 
+                    "\\usepackage{pgfplots}",
                     "\\makeatletter\n",
                     "\\batchmode\n",
                     "\\nonstopmode\n",
