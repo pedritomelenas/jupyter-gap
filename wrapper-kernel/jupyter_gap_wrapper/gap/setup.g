@@ -126,6 +126,6 @@ end);
 SetUserPreference("browse", "SelectHelpMatches", false);
 SetUserPreference("Pager", "cat");
 SetUserPreference("PagerOptions", "");
-
+SizeScreen([4096,24]);
 # Display help in browser not a good option for servers
 # SetUserPreference( "HelpViewers", ["browser"])
