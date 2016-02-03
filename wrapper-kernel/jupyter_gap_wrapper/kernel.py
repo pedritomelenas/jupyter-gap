@@ -32,7 +32,7 @@ class GAPKernel(Kernel):
         return self._banner
 
     language_info = {'name': 'gap',
-                     'codemirror_mode': 'gap', # note that this does not exist yet
+                     'codemirror_mode': 'typescript', # note that this does not exist yet
                      'mimetype': 'text/x-gap',
                      'file_extension': '.g'}
 
@@ -79,15 +79,45 @@ class GAPKernel(Kernel):
             return {'status': 'ok', 'execution_count': self.execution_count,
                     'payload': [], 'user_expressions': {}}
 
+        if re.search( 'function.*\(', code ) != None and 'end;' not in code:
+            stream_content = {'name': 'stdout', 'text': "end statement missing\n"}
+            self.send_response(self.iopub_socket, 'stream', stream_content)
+            return {'status': 'error', 'execution_count': self.execution_count,
+                    'ename': '', 'evalue': '', 'traceback': []}
+
         nocomment_code="";
         for line in code.splitlines():
             divline = re.split('[ \t]*#', line);
-            if len(divline[0]) != 0: 
-                nocomment_code = nocomment_code + divline[0] + '\n';
+            if len(divline[0]) != 0:
+                nocomment_code = nocomment_code + divline[0] + '\n'
 
         interrupted = False
         try:
+
             output = self.gapwrapper.run_command(nocomment_code.rstrip().replace('\n', ' ') + " ;", timeout=None)
+
+            if len(output) > 0:
+                li = output
+                if 'Syntax error:' in li:
+                    outcols = li.index( '^' )
+                    stream_content = {'name': 'stdout', 'text': "An error occurred \n"}#in position "+str(outcols)+"\n"}
+                    self.send_response(self.iopub_socket, 'stream', stream_content)
+                    lineprev=""
+                    printline=False
+                    for line in output.splitlines():
+                        if ("Syntax error: " in line):
+                            stream_content = {'name': 'stdout', 'text': line + "\n"}
+                            self.send_response(self.iopub_socket, 'stream', stream_content)
+
+                        if '^' in line:
+                            pos = line.index( '^' )
+                            stream_content = {'name': 'stdout', 'text': "--> "+lineprev[:pos+1].split()[-1] + "\n"}
+                            self.send_response(self.iopub_socket, 'stream', stream_content)
+                        lineprev = line
+                    output = ''
+                    return {'status': 'error', 'execution_count': self.execution_count,
+                            'ename': '', 'evalue': str(exitcode), 'traceback': []}
+
         except KeyboardInterrupt:
             self.gapwrapper.child.sendintr()
             interrupted = True
@@ -135,12 +165,7 @@ class GAPKernel(Kernel):
         if not code or code[-1] == ' ':
             return default
 
-        tokens = code
-        for ch in ";+*-()[]/,.?=:":
-            if ch in tokens:
-                tokens = tokens.replace(ch, ' ')
-
-        tokens = tokens.split()
+        tokens = code.replace(';', ' ').split()
         if not tokens:
             return default
 
