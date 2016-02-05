@@ -79,7 +79,7 @@ class GAPKernel(Kernel):
             return {'status': 'ok', 'execution_count': self.execution_count,
                     'payload': [], 'user_expressions': {}}
 
-        if re.search( 'function.*\(', code ) != None and 'end;' not in code:
+        if re.search( 'function.*\(', code ) != None and re.search('end[ \t]*\){0,1}[ \t]*;', code)==None:
             stream_content = {'name': 'stdout', 'text': "end statement missing\n"}
             self.send_response(self.iopub_socket, 'stream', stream_content)
             return {'status': 'error', 'execution_count': self.execution_count,
@@ -103,7 +103,6 @@ class GAPKernel(Kernel):
                     stream_content = {'name': 'stdout', 'text': "An error occurred \n"}#in position "+str(outcols)+"\n"}
                     self.send_response(self.iopub_socket, 'stream', stream_content)
                     lineprev=""
-                    printline=False
                     for line in output.splitlines():
                         if ("Syntax error: " in line):
                             stream_content = {'name': 'stdout', 'text': line + "\n"}
@@ -111,7 +110,11 @@ class GAPKernel(Kernel):
 
                         if '^' in line:
                             pos = line.index( '^' )
-                            stream_content = {'name': 'stdout', 'text': "--> "+lineprev[:pos+1].split()[-1] + "\n"}
+                            lineaux = lineprev[pos:]
+                            posaux = 1
+                            if ';' in lineaux:
+                                posaux = lineaux.index(';')+1
+                            stream_content = {'name': 'stdout', 'text': "--> "+lineprev[:pos+posaux].split()[-1] + "\n"}
                             self.send_response(self.iopub_socket, 'stream', stream_content)
                         lineprev = line
                     output = ''
