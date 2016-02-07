@@ -168,7 +168,13 @@ class GAPKernel(Kernel):
         if not code or code[-1] == ' ':
             return default
 
-        tokens = code.replace(';', ' ').split()
+        tokens = code
+        for ch in ";+*-()[]/,.?=:":
+            if ch in tokens:
+                tokens = tokens.replace(ch, ' ')
+
+        tokens = tokens.split()
+
         if not tokens:
             return default
 
