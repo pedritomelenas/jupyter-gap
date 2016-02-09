@@ -1,6 +1,14 @@
 # jupyter-gap
 Jupyter kernels for GAP
 
+This is a fork from [gap-packages/jupyter gap](https://github.com/gap-packages/jupyter-gap). These are the changes with respect to the original repository.
+
+- JupyterTikZSplash: outputs tikz code, inspired in [ipython-tikzmagic](https://github.com/mkrphys/ipython-tikzmagic)
+- Alternate error handling (this includes changing the `SizeScreen` parameters)
+- Improved auto-completion with TAB
+
+The rest of this `README.md` is a copy of the original one, with installation instructions.
+
 Please note that this software is still in the early stages of development and names of kernels, assumptions,
 and architecture might change on a day-to-day basis without notice.
 
