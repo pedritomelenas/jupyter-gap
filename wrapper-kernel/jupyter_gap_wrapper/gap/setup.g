@@ -56,9 +56,9 @@ end);
 BindGlobal("JupyterTikZSplash",
 function(tikz)
     local fn, header, rnd, ltx, svgfile, stream, svgdata, szscr;
-    
+
     header:=Concatenation(
-                    "\\documentclass[crop,tikz]{standalone}\n", 
+                    "\\documentclass[crop,tikz]{standalone}\n",
                     "\\usepackage{pgfplots}",
                     "\\makeatletter\n",
                     "\\batchmode\n",
@@ -67,13 +67,13 @@ function(tikz)
             "\\begin{tikzpicture}");
     header:=Concatenation(header, tikz);
     header:=Concatenation(header,"\\end{tikzpicture}\n\\end{document}");
-    
+
     rnd:=String(Random([0..1000]));
     fn := Concatenation("svg_get",rnd);
-    
+
     PrintTo(Concatenation(fn,".tex"),header);
-    
-    ltx:=Concatenation("pdflatex -shell-escape  ", 
+
+    ltx:=Concatenation("pdflatex -shell-escape  ",
         Concatenation(fn, ".tex")," > ",Concatenation(fn, ".log2"));
     Exec(ltx);
 
@@ -84,7 +84,7 @@ function(tikz)
         ltx:=Concatenation("pdf2svg ", Concatenation(fn, ".pdf"), " ",
             svgfile, " >> ",Concatenation(fn, ".log2"));
         Exec(ltx);
-    
+
         if not(IsExistingFile(svgfile)) then
             Print("No svg was created; pdf2svg is installed in your system?");
         else
@@ -124,8 +124,8 @@ end);
 # The following are needed to make the help system
 # sort of play nice with the wrapper kernel
 SetUserPreference("browse", "SelectHelpMatches", false);
-SetUserPreference("Pager", "cat");
+SetUserPreference("Pager", "tail");
 SetUserPreference("PagerOptions", "");
-SizeScreen([4096,24]);
+# SizeScreen([4096,24]);
 # Display help in browser not a good option for servers
 # SetUserPreference( "HelpViewers", ["browser"])
