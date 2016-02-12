@@ -97,13 +97,18 @@ class GAPKernel(Kernel):
             output = self.gapwrapper.run_command(nocomment_code.rstrip().replace('\n', ' ') + " ;", timeout=None)
 
             if len(output) > 0:
-                li = output
+                li = output.replace("\\"+"\r"+"\n","")
                 if 'Syntax error:' in li:
                     outcols = li.index( '^' )
-                    stream_content = {'name': 'stdout', 'text': "An error occurred \n"}#in position "+str(outcols)+"\n"}
+                    stream_content = {'name': 'stdout', 'text': "An error occurred in position "+str(outcols)+"\n"}
                     self.send_response(self.iopub_socket, 'stream', stream_content)
+                    #stream_content = {'name': 'stdout', 'text': output+"\n"}
+                    #self.send_response(self.iopub_socket, 'stream', stream_content)
+                    #stream_content = {'name': 'stdout', 'text': li}
+                    #self.send_response(self.iopub_socket, 'stream', stream_content)
+                    
                     lineprev=""
-                    for line in output.splitlines():
+                    for line in li.splitlines():
                         if ("Syntax error: " in line):
                             stream_content = {'name': 'stdout', 'text': line + "\n"}
                             self.send_response(self.iopub_socket, 'stream', stream_content)
